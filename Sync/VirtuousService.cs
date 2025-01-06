@@ -32,7 +32,7 @@ namespace Sync
             var body = new ContactQueryRequest();
             request.AddJsonBody(body);
 
-            var response = await _restClient.GetAsync<PagedResult<AbbreviatedContact>>(request);
+            var response = await _restClient.PostAsync<PagedResult<AbbreviatedContact>>(request);
             return response;
         }
     }
