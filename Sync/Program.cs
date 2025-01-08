@@ -1,10 +1,14 @@
 ﻿using CsvHelper;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
+using System.Diagnostics;
 
 namespace Sync
 {
@@ -25,21 +29,34 @@ namespace Sync
             var take = 100;
             var maxContacts = 1000;
             var hasMore = true;
+            var stateFilter = "AZ";
 
-            using (var writer = new StreamWriter($"Contacts_{DateTime.Now:MM_dd_yyyy}.csv"))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            using var writer = new StreamWriter($"Contacts_{DateTime.Now:MM_dd_yyyy}.csv");
+            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            do
             {
-                do
-                {
-                    var contacts = await virtuousService.GetContactsAsync(skip, take);
-                    //contacts = virtuousService.FilterForState(contacts, "AZ");
+                var contacts = await virtuousService.GetContactsAsync(skip, take, stateFilter);
 
-                    skip += take;
-                    await csv.WriteRecordsAsync(contacts.List);
-                    hasMore = skip > maxContacts-take;
-                }
-                while (!hasMore);
+                skip += take;
+                //await csv.WriteRecordsAsync(contacts.List);
+                virtuousService.AddContactsToDatabase(contacts.List);
+                hasMore = skip > maxContacts - take;
             }
+            while (!hasMore);
+
+            //try
+            //{
+               
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"Error occurred: {ex.Message}");
+            //}
+
+
         }
+
+       
     }
 }
